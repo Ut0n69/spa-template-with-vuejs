@@ -15,7 +15,6 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
             - v1-dependencies-
       - run: yarn install
-      - run: yarn test
       - save_cache:
           paths:
             - node_modules
@@ -25,9 +24,29 @@ jobs:
           root: .
           paths:
             - dist
+  test:
+    <<: *defaults
+    steps:
+      - run: yarn test
+  
+  deploy:
+    <<: *defaults
+    steps:
+    - deploy:
+        command: |
+            ./node_modules/netlify-cli/bin/cli.js deploy \
+            --site-id ${SITE_ID} \
+            -p build/ \
+            --access-token ${NETLIFY_TOKEN}
     
 workflows:
   version: 2
   build-deploy:
     jobs:
       - build
+      - test:
+          requires:
+            - build
+      - deploy:
+          requires:
+            - test
