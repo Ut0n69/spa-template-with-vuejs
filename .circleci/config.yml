@@ -20,14 +20,11 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
       - run: yarn build
+      - run: yarn test
       - persist_to_workspace:
           root: .
           paths:
             - dist
-  test:
-    <<: *defaults
-    steps:
-      - run: yarn test
   
   deploy:
     <<: *defaults
@@ -44,9 +41,6 @@ workflows:
   build-deploy:
     jobs:
       - build
-      - test:
-          requires:
-            - build
       - deploy:
           requires:
-            - test
+            - build
